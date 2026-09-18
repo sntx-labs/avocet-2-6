@@ -109,7 +109,7 @@ new ResizeObserver(resize).observe(container);
 
 // Canonical SHPanel lives in a separate layout region, never over the artwork.
 const panel=new window.SHPanel(panelEl),controls=[];
-const heading=document.createElement('div');heading.innerHTML='<h1 class="panel-title">VESPER DRIFT</h1><div class="panel-subtitle">AN ASTEROID BELT, WITHOUT AN EDGE</div>';panel._body.prepend(heading);
+const heading=document.createElement('div');heading.innerHTML='<h1 class="panel-title">AVOCET 2-6</h1><div class="panel-subtitle">AN ASTEROID BELT, WITHOUT AN EDGE</div>';panel._body.prepend(heading);
 const flight=panel.folder('Pilot');const note=document.createElement('div');note.className='flight-note';note.innerHTML='<strong>Mouse</strong> · steer in flight mode<br><strong>W / S</strong> · thrust &nbsp; <strong>A / D</strong> · roll<br><strong>Arrows</strong> · pitch / turn &nbsp; <strong>Q / E</strong> · strafe<br><strong>Shift</strong> · boost &nbsp; <strong>Space</strong> · brake<br><strong>M / C</strong> · flight / orbit mode<br><strong>Orbit mode: drag</strong> · look around<br><strong>Scroll</strong> · zoom &nbsp; <strong>R</strong> · return home<br><strong>`</strong> · hide panel';flight._body.append(note);
 const status=document.createElement('div');status.className='flight-status';flight._body.append(status);
 function bind(folder,type,key,opts={},change=()=>{}){const c=folder[type](settings,key,opts);c.on('change',()=>{change();});controls.push({c,key});return c;}
@@ -133,8 +133,8 @@ function syncArt(){for(const k of ['hull','hullLight','red'])materials[k].unifor
 function refresh(){for(const{c,key}of controls)c.setValue(settings[key]);}
 function refreshCameraControls(){for(const{c,key}of controls)if(key.startsWith('camera'))c.setValue(settings[key]);}
 const actions=panel.folder('Session');actions.button('Return home',resetFlight);actions.button('Reset all',()=>{Object.assign(settings,defaults);refresh();syncArt();resetFlight();});
-actions.button('Copy JSON',async()=>{const data=JSON.stringify({project:'vesper-drift',version:2,settings:{...settings}},null,2);let ok=false;try{await navigator.clipboard.writeText(data);ok=true;}catch{const el=document.createElement('textarea');el.value=data;panelEl.append(el);el.select();ok=document.execCommand('copy');el.remove();}const b=[...actions._body.querySelectorAll('button')].find(b=>b.textContent==='Copy JSON');if(b){b.textContent=ok?'Copied JSON':'Copy failed';setTimeout(()=>b.textContent='Copy JSON',1800);}});
-actions.button('Save image',()=>{const a=document.createElement('a');a.download='vesper-drift.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
+actions.button('Copy JSON',async()=>{const data=JSON.stringify({project:'avocet-2-6',version:2,settings:{...settings}},null,2);let ok=false;try{await navigator.clipboard.writeText(data);ok=true;}catch{const el=document.createElement('textarea');el.value=data;panelEl.append(el);el.select();ok=document.execCommand('copy');el.remove();}const b=[...actions._body.querySelectorAll('button')].find(b=>b.textContent==='Copy JSON');if(b){b.textContent=ok?'Copied JSON':'Copy failed';setTimeout(()=>b.textContent='Copy JSON',1800);}});
+actions.button('Save image',()=>{const a=document.createElement('a');a.download='avocet-2-6.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 actions.button('Hide panel (`)',()=>document.dispatchEvent(new KeyboardEvent('keydown',{code:'Backquote',bubbles:true})));
 function touchFlight(){if(settings.inputMode!=='Flight')setInputMode('Flight',false);releasePointer();}
 touchControls=window.LabsTouchControls?.({label:'Spacecraft touch controls',panel:panelEl,
