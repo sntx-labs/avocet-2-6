@@ -42,9 +42,10 @@ function updateReticle(){
  reticle.hidden=!reticleAim;
  if(reticleAim){reticle.style.left=((reticleAim.x+1)*50)+'%';reticle.style.top=((1-reticleAim.y)*50)+'%';}
 }
+const touchKeys=new Set(),touchAim={x:0,y:0};let touchControls;
 const keys=new Set(),mouseAim=new T.Vector2(),pointerPosition=new T.Vector2();let mouseActive=false,dragging=false,lastPointer={x:0,y:0};
 function releasePointer(){mouseActive=false;mouseAim.set(0,0);dragging=false;}
-function setInputMode(mode){settings.inputMode=mode;settings.camera=mode==='Flight'?'Chase':'Reference';releasePointer();keys.clear();angular.set(0,0,0);refresh();updateReticle();}
+function setInputMode(mode,resetTouch=true){if(resetTouch)touchControls?.reset();settings.inputMode=mode;settings.camera=mode==='Flight'?'Chase':'Reference';releasePointer();keys.clear();angular.set(0,0,0);refresh();updateReticle();}
 const accepted=new Set(['KeyW','KeyS','KeyA','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight','Space','KeyR','KeyC','KeyM']);
 window.addEventListener('keydown',e=>{
  if(panelEl.contains(e.target))return;
@@ -68,7 +69,7 @@ container.addEventListener('wheel',e=>{e.preventDefault();settings.cameraDistanc
 panelEl.addEventListener('pointerdown',()=>{keys.clear();releasePointer();},true);
 panelEl.addEventListener('pointerenter',releasePointer);
 
-function resetFlight(){shipOrientation.identity();ship.root.quaternion.identity();velocity.set(0,0,0);angular.set(0,0,0);journey.set(0,0,0);distance=0;collisionCount=0;keys.clear();releasePointer();buildField();updateCamera(0,true);}
+function resetFlight(){touchControls?.reset();shipOrientation.identity();ship.root.quaternion.identity();velocity.set(0,0,0);angular.set(0,0,0);journey.set(0,0,0);distance=0;collisionCount=0;keys.clear();releasePointer();buildField();updateCamera(0,true);}
 function step(dt){
  if(settings.paused)return;
  elapsed+=dt;
@@ -76,12 +77,13 @@ function step(dt){
  const pointerSteering=mouseActive&&settings.inputMode==='Flight';
  // The forward marker is also the neutral point for mouse steering.
  if(pointerSteering)mouseAim.set(T.MathUtils.clamp(pointerPosition.x-(reticleAim?.x||0),-1,1),T.MathUtils.clamp(pointerPosition.y-(reticleAim?.y||0),-1,1));
- const axes=flightAxes(keys);
- const turnX=T.MathUtils.clamp((keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0)+(pointerSteering?aim(mouseAim.y):0),-1,1),turnY=T.MathUtils.clamp((keys.has('ArrowLeft')?1:0)-(keys.has('ArrowRight')?1:0)-(pointerSteering?aim(mouseAim.x):0),-1,1),turnZ=axes.roll;
+ const input=new Set([...keys,...touchKeys]);
+ const axes=flightAxes(input);
+ const turnX=T.MathUtils.clamp((keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0)+(pointerSteering?aim(mouseAim.y):0)-touchAim.y,-1,1),turnY=T.MathUtils.clamp((keys.has('ArrowLeft')?1:0)-(keys.has('ArrowRight')?1:0)-(pointerSteering?aim(mouseAim.x):0)-touchAim.x,-1,1),turnZ=axes.roll;
  angular.lerp(v.set(turnX*settings.steering,turnY*settings.steering,turnZ*settings.rollSpeed),1-Math.exp(-dt*4));
  shipOrientation.multiply(new T.Quaternion().setFromEuler(new T.Euler(angular.x*dt,angular.y*dt,angular.z*dt,'YXZ'))).normalize();ship.root.quaternion.copy(shipOrientation);
  forward.set(0,0,-1).applyQuaternion(shipOrientation);
- const boost=keys.has('ShiftLeft')||keys.has('ShiftRight'),thrust=(keys.has('KeyW')?1:0)-(keys.has('KeyS')?1:0),brake=keys.has('Space');
+ const boost=input.has('ShiftLeft')||input.has('ShiftRight'),thrust=(input.has('KeyW')?1:0)-(input.has('KeyS')?1:0),brake=input.has('Space');
  if(thrust)velocity.addScaledVector(forward,thrust*settings.acceleration*(boost?2.3:1)*dt);
  const strafe=axes.strafe;
  if(strafe)velocity.addScaledVector(v.set(1,0,0).applyQuaternion(shipOrientation),strafe*settings.strafePower*dt);
@@ -134,6 +136,13 @@ const actions=panel.folder('Session');actions.button('Return home',resetFlight);
 actions.button('Copy JSON',async()=>{const data=JSON.stringify({project:'vesper-drift',version:2,settings:{...settings}},null,2);let ok=false;try{await navigator.clipboard.writeText(data);ok=true;}catch{const el=document.createElement('textarea');el.value=data;panelEl.append(el);el.select();ok=document.execCommand('copy');el.remove();}const b=[...actions._body.querySelectorAll('button')].find(b=>b.textContent==='Copy JSON');if(b){b.textContent=ok?'Copied JSON':'Copy failed';setTimeout(()=>b.textContent='Copy JSON',1800);}});
 actions.button('Save image',()=>{const a=document.createElement('a');a.download='vesper-drift.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 actions.button('Hide panel (`)',()=>document.dispatchEvent(new KeyboardEvent('keydown',{code:'Backquote',bubbles:true})));
+function touchFlight(){if(settings.inputMode!=='Flight')setInputMode('Flight',false);releasePointer();}
+touchControls=window.LabsTouchControls?.({label:'Spacecraft touch controls',panel:panelEl,
+ pads:[{label:'Steer',change:(x,y)=>{if(x||y)touchFlight();touchAim.x=x;touchAim.y=y;}}],
+ buttons:[... [['Thrust','KeyW'],['Brake','Space'],['Roll left','KeyA'],['Roll right','KeyD']].map(([label,key])=>({label,hold:down=>{if(down){touchFlight();touchKeys.add(key);}else touchKeys.delete(key);}})),
+ {label:'Orbit / Fly',click:()=>setInputMode(settings.inputMode==='Flight'?'Orbit':'Flight')},
+ {label:'Home',click:resetFlight}]
+});
 syncArt();resize();updateCamera(0,true);
 function render(now){requestAnimationFrame(render);const realDt=(now-lastTime)/1000,dt=Math.min(realDt,.045);lastTime=now;frameMs=frameMs*.96+realDt*1000*.04;step(dt);updateCamera(dt);updateReticle();film.uniforms.time.value=elapsed;renderer.info.reset();renderer.setRenderTarget(target);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(postScene,postCamera);if(++frame%15===0)status.textContent=`${velocity.length().toFixed(1)} u/s  ·  ${Math.floor(distance)} u traveled\n${settings.paused?'Paused':settings.cruise?'Cruise assist engaged':'Manual flight'}  ·  ${settings.camera.toLowerCase()} view`;}
 requestAnimationFrame(render);
