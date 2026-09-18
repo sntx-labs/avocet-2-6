@@ -2,6 +2,7 @@ import * as T from './vendor/three.module.js';
 import {makeShip,random} from './ship.js';
 import {toon,filmPass} from './materials.js';
 import {createBelt} from './belt.js';
+import {flightAxes,projectReticle} from './flight-controls.js';
 
 const defaults={paused:false,cruise:false,cruiseSpeed:8,topSpeed:38,acceleration:12,strafePower:10,steering:.65,mouseSensitivity:1.1,mouseDeadzone:.06,inputMode:'Flight',rollSpeed:.8,inertia:1.8,avoidance:true,camera:'Chase',cameraDistance:34,cameraAzimuth:1.02,cameraElevation:.49,cameraLag:5,asteroidCount:24000,asteroidScale:1,fieldRadius:6000,rockSeed:713,hull:'#c6d0c5',hullLight:'#d6dcd0',red:'#99534b',rock:'#7b8587',space:'#201d1c',contrast:1,wear:.6,ink:.74,grain:.2,vignette:.19,starBrightness:.8,engineGlow:.7};
 const settings={...defaults},container=document.getElementById('scene'),panelEl=document.getElementById('panel');
@@ -33,9 +34,17 @@ for(const s of [-1,1]){
  plume.rotation.x=Math.PI/2;plume.position.set(s*4.65,.15,11.1);plumes.add(plume);
 }
 
-const keys=new Set(),mouseAim=new T.Vector2();let mouseActive=false,dragging=false,lastPointer={x:0,y:0};
+const reticle=document.createElement('div');reticle.className='flight-reticle';reticle.hidden=true;reticle.setAttribute('aria-hidden','true');
+reticle.innerHTML='<span></span>';container.append(reticle);
+let reticleAim=null;
+function updateReticle(){
+ reticleAim=projectReticle(camera,shipOrientation,settings.inputMode,settings.camera);
+ reticle.hidden=!reticleAim;
+ if(reticleAim){reticle.style.left=((reticleAim.x+1)*50)+'%';reticle.style.top=((1-reticleAim.y)*50)+'%';}
+}
+const keys=new Set(),mouseAim=new T.Vector2(),pointerPosition=new T.Vector2();let mouseActive=false,dragging=false,lastPointer={x:0,y:0};
 function releasePointer(){mouseActive=false;mouseAim.set(0,0);dragging=false;}
-function setInputMode(mode){settings.inputMode=mode;settings.camera=mode==='Flight'?'Chase':'Reference';releasePointer();keys.clear();angular.set(0,0,0);refresh();}
+function setInputMode(mode){settings.inputMode=mode;settings.camera=mode==='Flight'?'Chase':'Reference';releasePointer();keys.clear();angular.set(0,0,0);refresh();updateReticle();}
 const accepted=new Set(['KeyW','KeyS','KeyA','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight','Space','KeyR','KeyC','KeyM']);
 window.addEventListener('keydown',e=>{
  if(panelEl.contains(e.target))return;
@@ -45,7 +54,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();releasePointer();});
 document.addEventListener('visibilitychange',()=>{keys.clear();releasePointer();lastTime=performance.now();});
-function aimAtPointer(e){const rect=container.getBoundingClientRect();mouseAim.set(T.MathUtils.clamp((e.clientX-rect.left)/rect.width*2-1,-1,1),T.MathUtils.clamp(1-(e.clientY-rect.top)/rect.height*2,-1,1));mouseActive=true;}
+function aimAtPointer(e){const rect=container.getBoundingClientRect();pointerPosition.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);mouseActive=true;}
 container.addEventListener('pointerdown',e=>{container.focus();dragging=settings.inputMode==='Orbit';lastPointer={x:e.clientX,y:e.clientY};container.setPointerCapture(e.pointerId);if(settings.inputMode==='Flight')aimAtPointer(e);});
 container.addEventListener('pointermove',e=>{
  if(settings.inputMode==='Flight'){if(e.pointerType==='mouse'||container.hasPointerCapture(e.pointerId))aimAtPointer(e);return;}
@@ -65,13 +74,16 @@ function step(dt){
  elapsed+=dt;
  const aim=value=>Math.sign(value)*Math.max(0,(Math.abs(value)-settings.mouseDeadzone)/(1-settings.mouseDeadzone))*settings.mouseSensitivity;
  const pointerSteering=mouseActive&&settings.inputMode==='Flight';
- const turnX=T.MathUtils.clamp((keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0)+(pointerSteering?aim(mouseAim.y):0),-1,1),turnY=T.MathUtils.clamp((keys.has('ArrowLeft')?1:0)-(keys.has('ArrowRight')?1:0)-(pointerSteering?aim(mouseAim.x):0),-1,1),turnZ=(keys.has('KeyQ')?1:0)-(keys.has('KeyE')?1:0);
+ // The forward marker is also the neutral point for mouse steering.
+ if(pointerSteering)mouseAim.set(T.MathUtils.clamp(pointerPosition.x-(reticleAim?.x||0),-1,1),T.MathUtils.clamp(pointerPosition.y-(reticleAim?.y||0),-1,1));
+ const axes=flightAxes(keys);
+ const turnX=T.MathUtils.clamp((keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0)+(pointerSteering?aim(mouseAim.y):0),-1,1),turnY=T.MathUtils.clamp((keys.has('ArrowLeft')?1:0)-(keys.has('ArrowRight')?1:0)-(pointerSteering?aim(mouseAim.x):0),-1,1),turnZ=axes.roll;
  angular.lerp(v.set(turnX*settings.steering,turnY*settings.steering,turnZ*settings.rollSpeed),1-Math.exp(-dt*4));
  shipOrientation.multiply(new T.Quaternion().setFromEuler(new T.Euler(angular.x*dt,angular.y*dt,angular.z*dt,'YXZ'))).normalize();ship.root.quaternion.copy(shipOrientation);
  forward.set(0,0,-1).applyQuaternion(shipOrientation);
  const boost=keys.has('ShiftLeft')||keys.has('ShiftRight'),thrust=(keys.has('KeyW')?1:0)-(keys.has('KeyS')?1:0),brake=keys.has('Space');
  if(thrust)velocity.addScaledVector(forward,thrust*settings.acceleration*(boost?2.3:1)*dt);
- const strafe=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0);
+ const strafe=axes.strafe;
  if(strafe)velocity.addScaledVector(v.set(1,0,0).applyQuaternion(shipOrientation),strafe*settings.strafePower*dt);
  if(settings.cruise&&!thrust&&!strafe&&!brake)velocity.lerp(v.copy(forward).multiplyScalar(settings.cruiseSpeed),1-Math.exp(-dt*.7));
  velocity.multiplyScalar(Math.exp(-dt*(brake?3.5:.11/settings.inertia)));
@@ -96,13 +108,13 @@ new ResizeObserver(resize).observe(container);
 // Canonical SHPanel lives in a separate layout region, never over the artwork.
 const panel=new window.SHPanel(panelEl),controls=[];
 const heading=document.createElement('div');heading.innerHTML='<h1 class="panel-title">VESPER DRIFT</h1><div class="panel-subtitle">AN ASTEROID BELT, WITHOUT AN EDGE</div>';panel._body.prepend(heading);
-const flight=panel.folder('Pilot');const note=document.createElement('div');note.className='flight-note';note.innerHTML='<strong>Mouse</strong> · steer in flight mode<br><strong>W / S</strong> · thrust &nbsp; <strong>A / D</strong> · strafe<br><strong>Arrows</strong> · pitch / turn &nbsp; <strong>Q / E</strong> · roll<br><strong>Shift</strong> · boost &nbsp; <strong>Space</strong> · brake<br><strong>M / C</strong> · flight / orbit mode<br><strong>Orbit mode: drag</strong> · look around<br><strong>Scroll</strong> · zoom &nbsp; <strong>R</strong> · return home<br><strong>`</strong> · hide panel';flight._body.append(note);
+const flight=panel.folder('Pilot');const note=document.createElement('div');note.className='flight-note';note.innerHTML='<strong>Mouse</strong> · steer in flight mode<br><strong>W / S</strong> · thrust &nbsp; <strong>A / D</strong> · roll<br><strong>Arrows</strong> · pitch / turn &nbsp; <strong>Q / E</strong> · strafe<br><strong>Shift</strong> · boost &nbsp; <strong>Space</strong> · brake<br><strong>M / C</strong> · flight / orbit mode<br><strong>Orbit mode: drag</strong> · look around<br><strong>Scroll</strong> · zoom &nbsp; <strong>R</strong> · return home<br><strong>`</strong> · hide panel';flight._body.append(note);
 const status=document.createElement('div');status.className='flight-status';flight._body.append(status);
 function bind(folder,type,key,opts={},change=()=>{}){const c=folder[type](settings,key,opts);c.on('change',()=>{change();});controls.push({c,key});return c;}
 bind(flight,'select','inputMode',{label:'Mouse mode',options:['Flight','Orbit']},()=>setInputMode(settings.inputMode));
 bind(flight,'toggle','paused',{label:'Pause'});bind(flight,'toggle','cruise',{label:'Cruise assist'});bind(flight,'slider','cruiseSpeed',{label:'Cruise speed',min:1,max:40,step:1});
 const mobile=flight.folder('Touch flight',{expanded:false}),grid=document.createElement('div');grid.className='touch-grid';
-for(const[label,key]of [['↖ Roll','KeyQ'],['↑ Pitch','ArrowUp'],['Roll ↗','KeyE'],['← Strafe','KeyA'],['Thrust','KeyW'],['Strafe →','KeyD'],['Reverse','KeyS'],['↓ Pitch','ArrowDown'],['Brake','Space']]){const b=document.createElement('button');b.className='sh-btn';b.textContent=label;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(key);});for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>keys.delete(key));grid.append(b);}mobile._body.append(grid);
+for(const[label,key]of [['↖ Roll','KeyA'],['↑ Pitch','ArrowUp'],['Roll ↗','KeyD'],['← Strafe','KeyQ'],['Thrust','KeyW'],['Strafe →','KeyE'],['Reverse','KeyS'],['↓ Pitch','ArrowDown'],['Brake','Space']]){const b=document.createElement('button');b.className='sh-btn';b.textContent=label;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(key);});for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>keys.delete(key));grid.append(b);}mobile._body.append(grid);
 const handling=panel.folder('Flight response',{expanded:false});
 for(const[key,label,min,max,stepSize]of [['topSpeed','Maximum speed',8,80,1],['acceleration','Thrust power',2,30,1],['strafePower','Strafe thrust',2,35,1],['mouseSensitivity','Mouse response',.2,2.5,.05],['mouseDeadzone','Mouse dead zone',0,.25,.01],['steering','Turn rate',.15,1.8,.05],['rollSpeed','Roll rate',.2,2,.05],['inertia','Coasting inertia',.3,5,.1]])bind(handling,'slider',key,{label,min,max,step:stepSize});
 bind(handling,'toggle','avoidance',{label:'Asteroid contact'});
@@ -123,6 +135,6 @@ actions.button('Copy JSON',async()=>{const data=JSON.stringify({project:'vesper-
 actions.button('Save image',()=>{const a=document.createElement('a');a.download='vesper-drift.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 actions.button('Hide panel (`)',()=>document.dispatchEvent(new KeyboardEvent('keydown',{code:'Backquote',bubbles:true})));
 syncArt();resize();updateCamera(0,true);
-function render(now){requestAnimationFrame(render);const realDt=(now-lastTime)/1000,dt=Math.min(realDt,.045);lastTime=now;frameMs=frameMs*.96+realDt*1000*.04;step(dt);updateCamera(dt);film.uniforms.time.value=elapsed;renderer.info.reset();renderer.setRenderTarget(target);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(postScene,postCamera);if(++frame%15===0)status.textContent=`${velocity.length().toFixed(1)} u/s  ·  ${Math.floor(distance)} u traveled\n${settings.paused?'Paused':settings.cruise?'Cruise assist engaged':'Manual flight'}  ·  ${settings.camera.toLowerCase()} view`;}
+function render(now){requestAnimationFrame(render);const realDt=(now-lastTime)/1000,dt=Math.min(realDt,.045);lastTime=now;frameMs=frameMs*.96+realDt*1000*.04;step(dt);updateCamera(dt);updateReticle();film.uniforms.time.value=elapsed;renderer.info.reset();renderer.setRenderTarget(target);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(postScene,postCamera);if(++frame%15===0)status.textContent=`${velocity.length().toFixed(1)} u/s  ·  ${Math.floor(distance)} u traveled\n${settings.paused?'Paused':settings.cruise?'Cruise assist engaged':'Manual flight'}  ·  ${settings.camera.toLowerCase()} view`;}
 requestAnimationFrame(render);
 window.__vesper={version:2,settings,reset:resetFlight,get state(){return{position:journey.toArray(),orientation:shipOrientation.toArray(),velocity:velocity.toArray(),distance,recycled:belt.metrics.recycled,collisionCount,mouseActive,mouseAim:mouseAim.toArray()};},get metrics(){return{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,rocks:belt.metrics.count,lodCounts:belt.metrics.lodCounts,fieldRadius:settings.fieldRadius,farClip:camera.far,frameMs,canvas:[container.clientWidth,container.clientHeight],meshes:ship.root.children.length};}};
