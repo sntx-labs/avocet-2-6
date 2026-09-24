@@ -4,7 +4,7 @@ import {toon,filmPass} from './materials.js';
 import {createBelt} from './belt.js';
 import {flightAxes,projectReticle} from './flight-controls.js';
 
-const defaults={paused:false,cruise:false,cruiseSpeed:8,topSpeed:38,acceleration:12,strafePower:10,steering:.65,mouseSensitivity:1.1,mouseDeadzone:.06,inputMode:'Flight',rollSpeed:.8,inertia:1.8,avoidance:true,camera:'Chase',cameraDistance:34,cameraAzimuth:1.02,cameraElevation:.49,cameraLag:5,asteroidCount:24000,asteroidScale:1,fieldRadius:6000,rockSeed:713,hull:'#c6d0c5',hullLight:'#d6dcd0',red:'#99534b',rock:'#7b8587',space:'#201d1c',contrast:1,wear:.6,ink:.74,grain:.2,vignette:.19,starBrightness:.8,engineGlow:.7};
+const defaults={paused:false,cruise:false,cruiseSpeed:8,topSpeed:38,acceleration:12,strafePower:10,steering:.65,mouseSensitivity:1.1,mouseDeadzone:.06,inputMode:'Orbit',rollSpeed:.8,inertia:1.8,avoidance:true,camera:'Reference',cameraDistance:34,cameraAzimuth:1.02,cameraElevation:.49,cameraLag:5,asteroidCount:24000,asteroidScale:1,fieldRadius:6000,rockSeed:713,hull:'#c6d0c5',hullLight:'#d6dcd0',red:'#99534b',rock:'#7b8587',space:'#201d1c',contrast:1,wear:.6,ink:.74,grain:.2,vignette:.19,starBrightness:.8,engineGlow:.7};
 const settings={...defaults},container=document.getElementById('scene'),panelEl=document.getElementById('panel');
 const renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.65));renderer.outputColorSpace=T.SRGBColorSpace;renderer.info.autoReset=false;container.append(renderer.domElement);
