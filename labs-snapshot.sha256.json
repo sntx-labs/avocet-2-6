@@ -1,0 +1,15 @@
+{
+  "public/experiments/vesper-drift/belt.js": "fc25711b6cb4ef151f32f444feb1dcbc1d75a07bb0680d2598a5d28d37fa4550",
+  "public/experiments/vesper-drift/experience.html": "7a3f124f5cbd1bc3cfcfe767f2ca83550d7e1d284cffa54b80345c729e8edbf7",
+  "public/experiments/vesper-drift/flight-controls.js": "f012b5cfbf797d91828988176070fbb89e371be8d42f01782ae1f3a646153a9e",
+  "public/experiments/vesper-drift/index.html": "50923186a3fae8c80558c3c63a0f6b3fe06b588c7afe7ce8c55724d432ae26d3",
+  "public/experiments/vesper-drift/main.js": "72702bea742749f82c9d8d70ab2fb0b116d18fd70b05a40690fd4dc4ac648efd",
+  "public/experiments/vesper-drift/materials.js": "18fad6db859755134466546702ae99a72aff222acaef20308c72d1eda78aa1a5",
+  "public/experiments/vesper-drift/sh-panel.css": "7596d1dfeaec9ad16241a1bc582d28b2856f0cc98eba9d4cce674393e9abd53e",
+  "public/experiments/vesper-drift/sh-panel.js": "6fdffb0f2bf1fdaea55e9b8650d459ddf206d79c4032d07bc313ed81baa6d3c3",
+  "public/experiments/vesper-drift/ship.js": "6a25267783d080af87991d320d440b42a38d723bd5168944c2b04083ed419db3",
+  "public/experiments/vesper-drift/style.css": "89c04844ab6d2c494d20f0559f97523ff36a3279cecdb7a5a775201f1e803451",
+  "public/experiments/vesper-drift/vendor/THREE-LICENSE.txt": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
+  "public/experiments/vesper-drift/vendor/three.core.js": "c269806166c61cc3ddf6f19b05fc31a50f6bdfc85902eaed723e972f9bb3e163",
+  "public/experiments/vesper-drift/vendor/three.module.js": "2ac776db82c8cb8075433c63085028142f3e86e20016a0308b28943e8dbea238"
+}
