@@ -1,6 +1,6 @@
 {
   "public/experiments/vesper-drift/belt.js": "fc25711b6cb4ef151f32f444feb1dcbc1d75a07bb0680d2598a5d28d37fa4550",
-  "public/experiments/vesper-drift/experience.html": "7a3f124f5cbd1bc3cfcfe767f2ca83550d7e1d284cffa54b80345c729e8edbf7",
+  "public/experiments/vesper-drift/experience.html": "a66c0f1f624bba89e2b118fb49a74a9d5244b7465834a91b349ece21b0c92178",
   "public/experiments/vesper-drift/flight-controls.js": "f012b5cfbf797d91828988176070fbb89e371be8d42f01782ae1f3a646153a9e",
   "public/experiments/vesper-drift/index.html": "50923186a3fae8c80558c3c63a0f6b3fe06b588c7afe7ce8c55724d432ae26d3",
   "public/experiments/vesper-drift/main.js": "72702bea742749f82c9d8d70ab2fb0b116d18fd70b05a40690fd4dc4ac648efd",
@@ -12,6 +12,7 @@
   "public/experiments/vesper-drift/vendor/THREE-LICENSE.txt": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
   "public/experiments/vesper-drift/vendor/three.core.js": "c269806166c61cc3ddf6f19b05fc31a50f6bdfc85902eaed723e972f9bb3e163",
   "public/experiments/vesper-drift/vendor/three.module.js": "2ac776db82c8cb8075433c63085028142f3e86e20016a0308b28943e8dbea238",
+  "public/images/syntax-badge.svg": "b0a4d392de24d8c6fa1fc408431ae6c43a68a46d27035ee146dccdd763a7f90a",
   "public/ui/analytics.js": "335f2017714c3d5fae88d0bac4ae348f1a3fc520c0a0cc1720421bd403fdda9f",
   "public/ui/booking-cable-renderer.js": "2c6e3547a646d0c861f05fe6b36f8c2289cc7628fbb042c8c649a410186577a6",
   "public/ui/booking-cables.js": "1b84ac971972bf838168e179d14588504d4b1a9a5f5b08bad5b5f9ae5b8ad38e",
@@ -22,12 +23,14 @@
   "public/ui/experience-entry.js": "9097a656c3037b5922d711cea0097f45ab83de8c6975d46802ffa7274928447d",
   "public/ui/experience-loading.js": "1ba96f27d5e062695ee35ac139cdd1914c2e79852ffc3a89a93bd3af58c0ba79",
   "public/ui/experience-shell.css": "572666d770b900ec048deb5d30aabe5af6a5d4f77adcb88014b27d4a425ddbe3",
-  "public/ui/experience-shell.js": "de7dcf86d5ebd5484fe09ea232f30fb30fec5ab73a03c361bd4eaf5becf40978",
+  "public/ui/experience-shell.js": "e9f9839b05cf132e197a033e2e224c238f8be13d252a1d4ca4ac2c2e531c3cbe",
   "public/ui/labs-panels.css": "fab0fb28b710f24068f701ed25ac19839c2dfc2b41ebade6ccf88956083ba4b5",
   "public/ui/labs-panels.js": "ef05dcad8ea2fff53bb3346a19d98138a413dbbeb4f8e985da87744afe32e1f3",
   "public/ui/lucide-license.txt": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
   "public/ui/mobile-controls.css": "ed9d276acdc8e12b17d5f5103c8fdd22afd77e0ffcc2a380dd55dbfc0344c29a",
   "public/ui/mobile-controls.js": "0d457a582a59179e1a692830d9cdedfa664a73f9157c6258d26a877fab7a1f73",
+  "public/ui/movement-hint.css": "44cae61fdcbf3fedc0d8095c875776bd71b8ce246814d40f5c9bad6fc20595e5",
+  "public/ui/movement-hint.js": "51b397cd4b6e1b82ad6c756351acc58da428070f1f302f592e1fcdbf42dafa13",
   "public/ui/project-cards.css": "baf9ece16e7f15acbe331bf97a8321319ee20c3190895d615911b268111346da",
   "public/ui/sh-panel/sh-panel.css": "7596d1dfeaec9ad16241a1bc582d28b2856f0cc98eba9d4cce674393e9abd53e",
   "public/ui/sh-panel/sh-panel.js": "6fdffb0f2bf1fdaea55e9b8650d459ddf206d79c4032d07bc313ed81baa6d3c3",
@@ -51,6 +54,5 @@
   "public/vendor/three-0.160.0/examples/jsm/shaders/LuminosityHighPassShader.js": "3d841cc594a0c1767d1b0185720b32761a0133c5f1b70b56658e28f2fb9b7900",
   "public/vendor/three-0.160.0/LICENSE": "852e0e8699169bf9f6fdc6bda3e682d078dcbc738b5d33e74df594721bff271d",
   "public/vendor/three-0.169.0/build/three.module.js": "0a3368c165eea773490aec7b77c22de70e3eac288503409256fdbf4d12578416",
-  "public/vendor/three-0.169.0/LICENSE": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
-  "public/images/syntax-badge.svg": "b0a4d392de24d8c6fa1fc408431ae6c43a68a46d27035ee146dccdd763a7f90a"
+  "public/vendor/three-0.169.0/LICENSE": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454"
 }
