@@ -1,6 +1,6 @@
 # Avocet 2-6
 
-Syntax Labs experiment. This repository is private while being prepared for release.
+Syntax Labs experiment. Public source repository for the linked live experience.
 
 [Live experience](https://labs.sntx.co/experiments/vesper-drift/) · [Run and edit this project](LABS.md)
 
